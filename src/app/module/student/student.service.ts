@@ -1,4 +1,4 @@
-import { Student } from '../student.modal'
+import { Student } from './student.modal'
 
 const getAllStudentsFromDB = async () => {
   const result = await Student.find()
