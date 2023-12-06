@@ -33,8 +33,8 @@ const getSingleAcademicSemester = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Academic Semester are deleted successfully',
-    data: null,
+    message: 'Academic Semester are fetch successfully',
+    data: result,
   })
   return result
 })
@@ -45,6 +45,7 @@ const updateAcademicSemester = catchAsync(async (req, res) => {
     semesterId,
     req.body,
   )
+  console.log(result)
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
