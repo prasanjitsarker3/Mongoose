@@ -1,3 +1,4 @@
+import AppError from '../../Error/AppError'
 import { academicSemesterMapper } from './academicSemesterConstant'
 import { TAcademicSemester } from './academicSemesterInterface'
 import { AcademicSemester } from './academicSemesterModel'
@@ -28,13 +29,12 @@ const updateAcademicSemesterIntoDB = async (
     payload.code &&
     academicSemesterMapper[payload.name] !== payload.code
   ) {
-    throw new Error('Invalid Semester Code')
+    throw new AppError(404, 'Invalid Semester Code')
   }
 
   const result = await AcademicSemester.findOneAndUpdate({ _id: id }, payload, {
     new: true,
   })
-  console.log(result)
   return result
 }
 export const AcademicSemesterService = {
