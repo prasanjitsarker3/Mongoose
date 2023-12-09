@@ -7,4 +7,5 @@ export default {
   dataBaseUrl: process.env.dataBase,
   bcryptSalt: process.env.bcryptSalt,
   defaultPass: process.env.defaultPass,
+  projectProcess: process.env.Development,
 }
