@@ -4,8 +4,26 @@ import { Student } from './student.modal'
 import User from '../user/userModel'
 import { TStudent } from './student.interface'
 
-const getAllStudentsFromDB = async () => {
-  const result = await Student.find()
+const getAllStudentsFromDB = async (query: Record<string>, unknown) => {
+  console.log('Query', query)
+  const queryObj = { ...query }
+  const studentSearchableFields = ['email', 'middleName', 'presentAddress']
+  const excludeFields = ['searchTerm', 'sort', 'limit']
+  excludeFields.forEach((el) => delete queryObj[el])
+  console.log({ query, queryObj })
+  let searchTerm = ' '
+  if (query?.searchTerm) {
+    searchTerm = query?.searchTerm as string
+  }
+
+  const searchQuery = Student.find({
+    $or: studentSearchableFields.map((field) => ({
+      [field]: { $regex: searchTerm, $options: 'i' },
+    })),
+  })
+
+  const filterQuery = searchQuery
+    .find(queryObj)
     .populate('admissionSemester')
     .populate({
       path: 'academicDepartment',
@@ -13,7 +31,17 @@ const getAllStudentsFromDB = async () => {
         path: 'academicFaculty',
       },
     })
-  return result
+  let sort = '-createdAt'
+  if (query.sort) {
+    sort = query.sort as string
+  }
+  const sortQuery = filterQuery.sort(sort)
+  let limit = 1
+  if (query.limit) {
+    limit = query.limit
+  }
+  const limitQuery = await sortQuery.limit(limit)
+  return limitQuery
 }
 
 const getSingleStudentFromDB = async (id: string) => {
