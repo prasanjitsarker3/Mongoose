@@ -3,45 +3,29 @@ import AppError from '../../Error/AppError'
 import { Student } from './student.modal'
 import User from '../user/userModel'
 import { TStudent } from './student.interface'
+import QueryBuilder from '../../builder/QueryBuilder'
+import { studentSearchableFields } from './studentConstant'
 
-const getAllStudentsFromDB = async (query: Record<string>, unknown) => {
-  console.log('Query', query)
-  const queryObj = { ...query }
-  const studentSearchableFields = ['email', 'middleName', 'presentAddress']
-  const excludeFields = ['searchTerm', 'sort', 'limit']
-  excludeFields.forEach((el) => delete queryObj[el])
-  console.log({ query, queryObj })
-  let searchTerm = ' '
-  if (query?.searchTerm) {
-    searchTerm = query?.searchTerm as string
-  }
+const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
+  const studentQuery = new QueryBuilder(
+    Student.find()
+      .populate('admissionSemester')
+      .populate({
+        path: 'academicDepartment',
+        populate: {
+          path: 'academicFaculty',
+        },
+      }),
+    query,
+  )
+    .search(studentSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields()
 
-  const searchQuery = Student.find({
-    $or: studentSearchableFields.map((field) => ({
-      [field]: { $regex: searchTerm, $options: 'i' },
-    })),
-  })
-
-  const filterQuery = searchQuery
-    .find(queryObj)
-    .populate('admissionSemester')
-    .populate({
-      path: 'academicDepartment',
-      populate: {
-        path: 'academicFaculty',
-      },
-    })
-  let sort = '-createdAt'
-  if (query.sort) {
-    sort = query.sort as string
-  }
-  const sortQuery = filterQuery.sort(sort)
-  let limit = 1
-  if (query.limit) {
-    limit = query.limit
-  }
-  const limitQuery = await sortQuery.limit(limit)
-  return limitQuery
+  const result = await studentQuery.modelQuery
+  return result
 }
 
 const getSingleStudentFromDB = async (id: string) => {

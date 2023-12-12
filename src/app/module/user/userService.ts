@@ -4,7 +4,10 @@ import { TStudent } from '../student/student.interface'
 import { Student } from '../student/student.modal'
 import { TUser } from './userInterface'
 import User from './userModel'
-import { generateStudentId } from './userUtils'
+import { generateFacultyId, generateStudentId } from './userUtils'
+import { TFaculty } from '../Faculty/facultyInterface'
+import { AcademicDepartment } from '../academicDepartment/academicDerpartmentModel'
+import { Faculty } from '../Faculty/facultyModel'
 
 const createStudentIntoDB = async (password: string, payload: TStudent) => {
   const userData: Partial<TUser> = {}
@@ -33,6 +36,26 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
   }
 }
 
+const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
+  const userData: Partial<TUser> = {}
+  userData.password = password || (config.defaultPass as string)
+  userData.role = 'faculty'
+  const academicDepartment = await AcademicDepartment.findById(
+    payload.academicDepartment,
+  )
+  if (!academicDepartment) {
+    throw new Error('Academic department not found')
+  }
+  userData.id = await generateFacultyId()
+  const newUser = await User.create(userData)
+  if (Object.keys(newUser).length) {
+    payload.id = newUser.id
+    payload.user = newUser._id //reference _id
+    const newFaculty = await Faculty.create(payload)
+    return newFaculty
+  }
+}
 export const userServices = {
   createStudentIntoDB,
+  createFacultyIntoDB,
 }
