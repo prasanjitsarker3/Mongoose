@@ -9,4 +9,7 @@ export default {
   defaultPass: process.env.defaultPass,
   projectProcess: process.env.Development,
   jwtAccessToken: process.env.jwtSecretToken,
+  jwtRefreshToken: process.env.secretRefreshToken,
+  accessTokenExpaierDate: process.env.accessTokenExpaierDate,
+  refreshTokenExpaierDate: process.env.refreshTokenExpaierDate,
 }
