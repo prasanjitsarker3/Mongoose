@@ -1,7 +1,7 @@
 import QueryBuilder from '../../builder/QueryBuilder'
 import { CourseSearchFields } from './courseConstans'
-import { TCourse } from './courseInterface'
-import { Course } from './courseModel'
+import { TCourse, TCourseFaculty } from './courseInterface'
+import { Course, CourseFaculty } from './courseModel'
 
 const createCourseIntoDB = async (payload: TCourse) => {
   const result = await Course.create(payload)
@@ -48,10 +48,40 @@ const updateCourseIntoDB = async (id: string, payload: Partial<TCourse>) => {
     const deletedPreRequisites = preRequisiteCourses
       .filter((el) => el.course && el.isDeleted)
       .map((el) => el.course)
-    console.log(deletedPreRequisites)
+    const deletedPreRequisiteCourses = await Course.findByIdAndUpdate(id, {
+      $pull: { preRequisiteCourses: { course: { $in: deletedPreRequisites } } },
+    })
   }
 
   return updateBasicCourseInfo
+}
+
+const assignFacultiesWithCourseIntoDB = async (
+  id: string,
+  payload: Partial<TCourseFaculty>,
+) => {
+  const result = await CourseFaculty.findByIdAndUpdate(
+    id,
+    { course: id, $addToSet: { faculties: { $each: payload } } },
+    {
+      upsert: true,
+      new: true,
+    },
+  )
+  return result
+}
+const removeFacultiesWithCourseFromDB = async (
+  id: string,
+  payload: Partial<TCourseFaculty>,
+) => {
+  const result = await CourseFaculty.findByIdAndUpdate(
+    id,
+    { $pull: { faculties: { $in: payload } } },
+    {
+      new: true,
+    },
+  )
+  return result
 }
 
 export const courseServices = {
@@ -60,4 +90,6 @@ export const courseServices = {
   getSingleCourseFromDB,
   deleteCourseFromDB,
   updateCourseIntoDB,
+  assignFacultiesWithCourseIntoDB,
+  removeFacultiesWithCourseFromDB,
 }

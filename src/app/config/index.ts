@@ -8,4 +8,5 @@ export default {
   bcryptSalt: process.env.bcryptSalt,
   defaultPass: process.env.defaultPass,
   projectProcess: process.env.Development,
+  jwtAccessToken: process.env.jwtSecretToken,
 }
